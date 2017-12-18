@@ -1,0 +1,8 @@
+import scipy
+import scipy.io as sio
+import numpy as np
+
+data = sio.loadmat('BreastCancerData.mat')
+# train
+# test
+
