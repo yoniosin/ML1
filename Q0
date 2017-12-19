@@ -1,7 +1,7 @@
 import scipy
 import scipy.io as sio
 import numpy as np
-from Quantizer import quantizer
+from NaiveBayes import *
 
 dataStruct = sio.loadmat('BreastCancerData.mat')
 data = dataStruct['X']
@@ -26,7 +26,9 @@ for index in randIdx[trainSetSize:]:
     sumTest += label[index]
 testPercent = sumTest / (dataSize[1] - trainSetSize)
 
-QL_Mat = quantizer(data, 2, 6)
+train_data = [data for data, label in trainSet]
+train_label = [label for data, label in trainSet]
 
-# train
-# test
+cluster_sizes, mu, sigma = trainNaiveBayes(train_data, 2, train_label)
+
+our_classification = BinaryClassification(train_data, cluster_sizes, mu, sigma)
