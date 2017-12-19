@@ -1,11 +1,32 @@
 import scipy
 import scipy.io as sio
 import numpy as np
-import pandas as pd
+from Quantizer import quantizer
 
+dataStruct = sio.loadmat('BreastCancerData.mat')
+data = dataStruct['X']
+dataSize = np.shape(data)
+label = dataStruct['y']
 
-data = sio.loadmat('BreastCancerData.mat')
+randIdx = np.random.permutation(dataSize[1])
+
+trainSetSize = int(np.floor(dataSize[1] / 5))
+trainSet = []
+sumTrain = 0
+for index in randIdx[:trainSetSize]:
+    trainSet.append((data[:, index], label[index]))
+    sumTrain += label[index]
+
+trainPercent = sumTrain / trainSetSize
+
+testSet = []
+sumTest = 0
+for index in randIdx[trainSetSize:]:
+    testSet.append((data[: index], label[index]))
+    sumTest += label[index]
+testPercent = sumTest / (dataSize[1] - trainSetSize)
+
+QL_Mat = quantizer(data, 2, 6)
+
 # train
 # test
-
-a = np.array(3)

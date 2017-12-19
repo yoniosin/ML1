@@ -1,3 +1,5 @@
 import scipy
 import numpy as np
 
+array = np.array([1, 2, 3])
+test = np.reshape(2*array, (2, 3))
