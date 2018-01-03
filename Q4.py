@@ -15,6 +15,8 @@ class Node:
         (self.featureIdx, isLeaf) = chaosCalc(data, featureList, thresArray, labels)
         self.thresh = thresArray[self.featureIdx]
         featureList.remove(self.featureIdx)
+        self.right = None
+        self.left = None
 
         rightIdx = data[self.featureIdx, :] > self.thresh
         leftIdx = data[self.featureIdx, :] <= self.thresh
@@ -28,12 +30,9 @@ class Node:
         else:
             if len(rightLabels) > 0:
                 self.right = Leaf(rightLabels)
-            else:
-                self.right = None
             if len(leftLabels) > 0:
                 self.left = Leaf(leftLabels)
-            else:
-                self.left = None
+
 
     def predict(self, sample):
         if self.right is None:
