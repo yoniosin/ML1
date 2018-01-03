@@ -19,15 +19,12 @@ class Node:
         rightIdx = data[self.featureIdx, :] > self.thresh
         leftIdx = data[self.featureIdx, :] <= self.thresh
 
-        rightData = data[:, rightIdx]
-        leftData = data[:, leftIdx]
-
         rightLabels = labels[rightIdx]
         leftLabels = labels[leftIdx]
 
         if not isLeaf and len(featureList) > 0:
-            self.right = Node(rightData, rightLabels, featureList[:])
-            self.left = Node(leftData, leftLabels, featureList[:])
+            self.right = Node(data[:, rightIdx], rightLabels, featureList[:])
+            self.left = Node(data[:, leftIdx], leftLabels, featureList[:])
         else:
             if len(rightLabels) > 0:
                 self.right = Leaf(rightLabels)
@@ -80,7 +77,6 @@ def chaosCalc(data, featureList, thresharray, labels):
         if chaos < bestChaos:
             bestChaos = chaos
             bestFeature = feature
-
     return bestFeature, False
 
 
