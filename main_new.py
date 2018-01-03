@@ -40,9 +40,9 @@ tree = Q4.Tree(train_data, train_labels)
 
 count_true = 0
 for i in range(np.shape(test_data)[1]):
-    label = tree.predict(test_data[:,i])
+    label = tree.predict(test_data[:, i])
     if label == test_labels[i]:
         count_true += 1
 
-print(count_true/np.shape(test_data)[1])
+print(count_true/np.shape(test_data)[1]*100)
 

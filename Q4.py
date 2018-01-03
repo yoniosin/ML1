@@ -31,11 +31,19 @@ class Node:
         else:
             if len(rightLabels) > 0:
                 self.right = Leaf(rightLabels)
+            else:
+                self.right = None
             if len(leftLabels) > 0:
                 self.left = Leaf(leftLabels)
+            else:
+                self.left = None
 
     def predict(self, sample):
-        if self.left is None or sample[self.featureIdx] > self.thresh:
+        if self.right is None:
+            return self.left.predict(sample)
+        elif self.left is None:
+            return self.right.predict(sample)
+        elif sample[self.featureIdx] > self.thresh:
             return self.right.predict(sample)
         else:
             return self.left.predict(sample)
@@ -73,8 +81,6 @@ def chaosCalc(data, featureList, thresharray, labels):
             bestChaos = chaos
             bestFeature = feature
 
-    if bestFeature == -1:
-        flag=1
     return bestFeature, False
 
 
