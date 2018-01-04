@@ -12,11 +12,9 @@ class Tree:
 class Node:
     def __init__(self, data, labels, featureList):
         thresArray = threshCalc(data)
-        (self.featureIdx, isLeaf) = chaosCalc(data, featureList, thresArray, labels)
+        self.featureIdx = chaosCalc(data, featureList, thresArray, labels)
         self.thresh = thresArray[self.featureIdx]
         featureList.remove(self.featureIdx)
-        self.right = None
-        self.left = None
 
         rightIdx = data[self.featureIdx, :] > self.thresh
         leftIdx = data[self.featureIdx, :] <= self.thresh
@@ -24,22 +22,18 @@ class Node:
         rightLabels = labels[rightIdx]
         leftLabels = labels[leftIdx]
 
-        if not isLeaf and len(featureList) > 0:
+        if not isLeaf(rightLabels, featureList):
             self.right = Node(data[:, rightIdx], rightLabels, featureList[:])
+        else:
+            self.right = Leaf(rightLabels)
+
+        if not isLeaf(leftLabels, featureList):
             self.left = Node(data[:, leftIdx], leftLabels, featureList[:])
         else:
-            if len(rightLabels) > 0:
-                self.right = Leaf(rightLabels)
-            if len(leftLabels) > 0:
-                self.left = Leaf(leftLabels)
-
+            self.left = Leaf(leftLabels)
 
     def predict(self, sample):
-        if self.right is None:
-            return self.left.predict(sample)
-        elif self.left is None:
-            return self.right.predict(sample)
-        elif sample[self.featureIdx] > self.thresh:
+        if sample[self.featureIdx] > self.thresh:
             return self.right.predict(sample)
         else:
             return self.left.predict(sample)
@@ -54,9 +48,6 @@ class Leaf:
 
 
 def chaosCalc(data, featureList, thresharray, labels):
-    if np.std(labels) == 0:
-        return featureList[0], True
-
     bestFeature = -1
     bestChaos = np.inf
 
@@ -76,8 +67,14 @@ def chaosCalc(data, featureList, thresharray, labels):
         if chaos < bestChaos:
             bestChaos = chaos
             bestFeature = feature
-    return bestFeature, False
+    return bestFeature
 
 
 def threshCalc(data):
     return np.mean(data, axis=1)
+
+
+def isLeaf(labels, featureList):
+    if np.std(labels) == 0 or len(featureList) == 0:
+        return True
+    return False
