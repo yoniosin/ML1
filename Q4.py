@@ -75,6 +75,4 @@ def threshCalc(data):
 
 
 def isLeaf(labels, featureList):
-    if np.std(labels) == 0 or len(featureList) == 0:
-        return True
-    return False
+    return np.std(labels) == 0 or len(featureList) == 0
