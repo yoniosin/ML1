@@ -2,11 +2,12 @@ import numpy as np
 
 max_depth = 30
 
+
 # Following is an implementation of a Desicion Tree
 # The tree builds itself recoursivley upon initialization.
 # there are two main srtucts:
-  # Node - each node in the tree
-  # Leaf - a special node that holds the desicion of the label
+# Node - each node in the tree
+# Leaf - a special node that holds the desicion of the label
 # each node builds the following nodes or leafs, until the tree is done
 # the tree can be built in one of 3 modes (entropy, gini, error)
 # there is a limit to the tree depth, which sent as input upon initialization
@@ -36,22 +37,18 @@ class Node:
         rightLabels = labels[rightIdx]
         leftLabels = labels[leftIdx]
         # check if need to build a leaf or children nodes, and do it
-        if not isLeaf(rightLabels, featureList, depth):
-            self.right = Node(data[:, rightIdx], rightLabels, featureList[:], mode, depth+1)
-        else:
-            self.right = Leaf(rightLabels)
+        self.right = self.buildSon(data[:, rightIdx], rightLabels, featureList[:], mode, depth)
+        self.left = self.buildSon(data[:, leftIdx], leftLabels, featureList[:], mode, depth)
 
-        if not isLeaf(leftLabels, featureList, depth):
-            self.left = Node(data[:, leftIdx], leftLabels, featureList[:], mode, depth+1)
-        else:
-            self.left = Leaf(leftLabels)
-
+    def buildSon(self, data, labels, featureList, mode, depth):
+        if isLeaf(labels, featureList, depth):
+            return Leaf(labels)
+        return Node(data, labels, featureList, mode, depth + 1)
 
     def predict(self, sample):
         if sample[self.featureIdx] > self.thresh:
             return self.right.predict(sample)
-        else:
-            return self.left.predict(sample)
+        return self.left.predict(sample)
 
 
 class Leaf:
@@ -69,23 +66,23 @@ def chaosCalc(data, featureList, thresharray, labels, mode):
     for feature in featureList:
         posIdx = data[feature, :] > thresharray[feature]
         negIdx = data[feature, :] <= thresharray[feature]
-        
+
         # calculate probebilities for feature:
         pos_pos_prob = sum(labels[posIdx]) / sum(posIdx) + 0.000001  # to avoid zero
         pos_neg_prob = 1 - pos_pos_prob + 0.000001
         neg_pos_prob = sum(labels[negIdx]) / sum(negIdx) + 0.000001  # to avoid zero
         neg_neg_prob = 1 - neg_pos_prob + 0.000001
-        
+
         if mode == 'entropy':
-            pos_chaos = (-1)*(pos_pos_prob * np.log(pos_pos_prob) + pos_neg_prob * np.log(pos_neg_prob))
-            neg_chaos = (-1)*(neg_pos_prob * np.log(neg_pos_prob) + neg_neg_prob * np.log(neg_neg_prob))
+            pos_chaos = (-1) * (pos_pos_prob * np.log(pos_pos_prob) + pos_neg_prob * np.log(pos_neg_prob))
+            neg_chaos = (-1) * (neg_pos_prob * np.log(neg_pos_prob) + neg_neg_prob * np.log(neg_neg_prob))
         elif mode == 'gini':
-            pos_chaos = pos_pos_prob * (1-pos_pos_prob) + pos_neg_prob * (1-pos_neg_prob)
-            neg_chaos = neg_pos_prob * (1-neg_pos_prob) + neg_neg_prob * (1-neg_neg_prob)  
+            pos_chaos = pos_pos_prob * (1 - pos_pos_prob) + pos_neg_prob * (1 - pos_neg_prob)
+            neg_chaos = neg_pos_prob * (1 - neg_pos_prob) + neg_neg_prob * (1 - neg_neg_prob)
         elif mode == 'error':
-            pos_chaos = 1-max(pos_pos_prob,pos_neg_prob,neg_pos_prob,neg_neg_prob)
-            neg_chaos = 0                                      
-            
+            pos_chaos = 1 - max(pos_pos_prob, pos_neg_prob, neg_pos_prob, neg_neg_prob)
+            neg_chaos = 0
+
         chaos = (pos_chaos * sum(posIdx) + neg_chaos * sum(negIdx)) / len(labels)
 
         if chaos < bestChaos:
