@@ -1,170 +1,95 @@
 # -*- coding: utf-8 -*-
 """
-Created on Mon Dec 18 14:33:53 2017
+Created on Thu Jan  4 21:50:42 2018
 
 @author: amirli
 """
 import numpy as np
-
 import matplotlib.pyplot as plt
 
+def logisticRegression(train_data,train_labels,test_data,test_labels,mode):
+    # init lists of train and test loss
+    TrainLoss = []
+    TestLoss = []
     
+    # init hyper parameters
+    mu = 0.04
+    stop_thresh = 0.00001
     
-
+    images_num = np.shape(train_data)[1]
+    features_len = np.shape(train_data)[0]
     
-class LogisticModel:
-    def __init__(self):
-#        self.stop_threshold = 10**-5
-#        self.mu = 0.001
-        self.stop_threshold = 10**-6
-        self.mu = 0.001        
-        self.weights = 0
-        self.loss_serial = []
-        self.loss_batch = []
-        self.count = 20
-
-    def softmax(self,features):
-        score = np.dot(features,self.weights)
-        return 1 / (1 + np.exp(score))
+    # init random weights
+    w = np.random.normal(0, 0.5, features_len)
     
+    # mesure initial train and test loss (before training):
+    train_loss,test_loss = check_loss(w,train_data,train_labels,test_data,test_labels)                
+    TrainLoss.append(train_loss)
+    TestLoss.append(test_loss) 
     
-    def checkStop(self,dw):
-        #dw = vector of diffs in weights vector
-        if self.count < 0:
-            self.count = 5
-        diff_sum = np.sum(dw**2)
-        if diff_sum < self.stop_threshold:
-            self.count -= 1
-        else:
-#            print(self.count)
-            self.count = 5
-        return (0 ==  self.count)
+    run = True
+    epoch = 0
+    # train (until stop condition is activated, and "run" will be set to False)
+    while run:
+        index_list = np.random.permutation(images_num) # choose random order
+        if mode == 'serial':
+            for i in index_list:
+                features = train_data[:,index_list[i]]
+                label = train_labels[index_list[i]]
+                v = np.dot(w,features)
+                g = 1 / (1+np.exp(-v))
+                d_g = np.exp(-v) / ((1+np.exp(-v))**2)
+                dw = mu*(label-g)*d_g*features
+                # update weights after each sample:
+                w = w + dw
+                #check stop condition:
+                if np.all(dw**2 < stop_thresh) and epoch > 2: 
+                    run = False
+                    break
+                # check loss after each update:
+                train_loss,test_loss = check_loss(w,train_data,train_labels,test_data,test_labels)                
+                TrainLoss.append(train_loss)
+                TestLoss.append(test_loss)
+            epoch += 1
+            print('finished epoch ',epoch)               
          
+        else: #if Batch mode   
+            dw = 0
+            for i in index_list:
+                features = train_data[:,index_list[i]]
+                label = train_labels[index_list[i]]
+                v = np.dot(w,features)
+                g = 1 / (1+np.exp(-v))
+                d_g = np.exp(-v) / ((1+np.exp(-v))**2)
+                step = mu*(label-g)*d_g*features
+                dw += step
+                #check stop condition:
+                if np.all(step**2 < stop_thresh) and epoch > 2:
+                    run = False
+                    break
+            # update weights after each epoch:
+            w = w + dw
+            epoch += 1
+            print("finished epoch ",epoch)
             
-    def train(self,train_set,test_set,mode):
-        
-        # data = array of [parameters,data], were each column is an image
-        # init weights vector in the size of the features + 1 for bias?
-        TrainLoss = []
-        TestLoss = []
-        features_len = len(train_set[0][0])
-        images_num = len(train_set)
-        self.weights = np.ones(features_len, dtype=np.float64)
-        index_list = np.random.permutation(images_num)
-        first_ecpoch_done = False
-        stop_flag = False
-        image_done = 0
-        epoch = 0
-        #check initial loss precentage:
-        loss = 0
-        for features,label in train_set:
-            g = self.softmax(-1*features) > 0.5
-            update = abs(int(label) - int(g))
-            loss += update
-        loss = loss / len(train_set)
-        TrainLoss.append(loss)
-        
-        loss = 0
-        for features,label in test_set:
-            g = self.softmax(-1*features) > 0.5
-            update = abs(int(label) - int(g))
-            loss += update
-        loss = loss / len(test_set)
-        TestLoss.append(loss)
-        
-        while not stop_flag:
-            if 'serial' == mode:
-                for i in index_list:
-                    image_done += 1
-                    sample_features = train_set[i][0]
-                    data_label = train_set[i][1]
-                    g = self.softmax(-1*sample_features)
-                    diff = data_label - g
-                    dw = self.mu*diff*sample_features
-                    self.weights = self.weights + dw
+            # check loss after each epoch:
+            train_loss,test_loss = check_loss(w,train_data,train_labels,test_data,test_labels)                
+            TrainLoss.append(train_loss)
+            TestLoss.append(test_loss)      
     
-                    if diff > 0:
-                        stop_flag = self.checkStop(dw)
-                        if stop_flag and first_ecpoch_done:
-                            print("exiting!")
-                            break
-                        #check loss after each epoch:                                 
-                    if image_done % 200 == 0:
-                        loss = 0
-                        for features,label in train_set:
-                            g = self.softmax(-1*features) > 0.5
-                            update = abs(int(label) - int(g))
-                            loss += update
-                        loss = loss / images_num
-                        TrainLoss.append(loss)
-                        
-                        loss = 0
-                        for features,label in test_set:
-                            g = self.softmax(-1*features) > 0.5
-                            update = abs(int(label) - int(g))
-                            loss += update
-                        loss = loss / len(test_set)
-                        TestLoss.append(loss)
-                        
-                first_ecpoch_done = True
-                epoch += 1
-                print("finished epoch ",epoch)
-                    #rearange data in new order:
-                index_list = np.random.permutation(images_num)
-            
-            if 'batch' == mode:
-                dw = 0
-                for i in index_list:
-                    image_done += 1
-                    sample_features = train_set[i][0]
-                    data_label = train_set[i][1]
-                    g = self.softmax(-1*sample_features)
-                    diff = data_label - g
-                    dw += self.mu*diff*sample_features
-                self.weights = self.weights + dw
-                if dw.any() > 0:
-                    stop_flag = self.checkStop(dw)
-                    if stop_flag:
-                        print("exiting!")
-                        break
-                #check loss after each epoch:                                 
-                loss = 0
-                for features,label in train_set:
-                    g = self.softmax(-1*features) > 0.5
-                    update = abs(int(label) - int(g))
-                    loss += update
-                loss = loss / len(train_set)
-                TrainLoss.append(loss)
-                
-                loss = 0
-                for features,label in test_set:
-                    g = self.softmax(-1*features) > 0.5
-                    update = abs(int(label) - int(g))
-                    loss += update
-                loss = loss / len(test_set)
-                TestLoss.append(loss)
-                
-                epoch += 1
-                print("finished epoch ",epoch)                    
-
+    return (TrainLoss,TestLoss)
         
-        #batch
-        print("Stopped after {} examples seen".format(image_done))
-        print("Best accuracy measured over train set is: ", 1-min(TrainLoss),"%")
-        print("Best accuracy measured over test set is: ", 1-min(TestLoss),"%")        
-        fig = plt.figure()
-        plt.plot(TrainLoss,'-g')
-        plt.plot(TestLoss,'-b')
-        plt.axhline(y=min(TrainLoss), xmin=0, xmax=TrainLoss.index(min(TrainLoss))/(len(TrainLoss)-1), linewidth=1, color = 'g', ls = '--', label = 'train')
-        plt.axhline(y=min(TestLoss), xmin=0, xmax=TestLoss.index(min(TestLoss))/(len(TestLoss)-1), linewidth=1, color = 'b', ls = '--')
+        
 
-        plt.title('Logistic Model Loss - ' + mode + ' mode')
-        plt.ylabel('error (%)')
-        plt.legend(['Train Set Loss','Test Set Loss'])
-        plt.show()
+def check_loss(w,train_data,train_labels,test_data,test_labels):
+    v = np.dot(w,train_data)
+    classifications = 1*((1 / (1+np.exp(-v))) > 0.5)
+    classifications = classifications.reshape(np.shape(train_labels))
+    train_loss = 100 * np.sum(abs(classifications-train_labels)) / len(train_labels)
 
-        return TrainLoss,TestLoss    
+    v = np.dot(w,test_data)
+    classifications = 1*((1 / (1+np.exp(-v))) > 0.5)
+    classifications = classifications.reshape(np.shape(test_labels))
+    test_loss = 100 * np.sum(abs(classifications-test_labels)) / len(test_labels)
     
-
-    
-    
+    return (train_loss,test_loss)
