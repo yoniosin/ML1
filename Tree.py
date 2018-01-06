@@ -1,10 +1,10 @@
 import numpy as np
 
 
-# Following is an implementation of a Desicion Tree
-# The tree builds itself recoursivley upon initialization.
+# Following is an implementation of a Decision Tree
+# The tree builds itself recursively upon initialization.
 # there are three main classes:
-# Tree - defined to it's root node, and to two inputs (provided on tree initialization):
+# Tree - defined according to it's root node, and two inputs (provided on tree initialization):
 #   mode, in (entropy, gini, error)
 #   limit to the tree depth
 # Node - each node in the tree, contains:
@@ -58,7 +58,7 @@ class Node:
             posIdx = data[feature, :] > thresharray[feature]
             negIdx = data[feature, :] <= thresharray[feature]
 
-            # calculate probebilities for feature:
+            # calculate probabilities for feature:
             pos_pos_prob = sum(labels[posIdx]) / sum(posIdx) + 0.000001  # to avoid zero
             pos_neg_prob = 1 - pos_pos_prob + 0.000001
             neg_pos_prob = sum(labels[negIdx]) / sum(negIdx) + 0.000001  # to avoid zero
