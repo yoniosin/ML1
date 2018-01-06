@@ -46,8 +46,8 @@ class Node:
         rightIdx = data[self.featureIdx, :] > self.thresh
         leftIdx = data[self.featureIdx, :] <= self.thresh
         # check if need to build a leaf or children nodes, and do it
-        self.right = tree.buildNode(data[:, rightIdx], labels[rightIdx], featureList[:], depth, tree)
-        self.left = tree.buildNode(data[:, leftIdx], labels[leftIdx], featureList[:], depth, tree)
+        self.right = tree.buildNode(data[:, rightIdx], labels[rightIdx], featureList[:], depth)
+        self.left = tree.buildNode(data[:, leftIdx], labels[leftIdx], featureList[:], depth)
 
     @staticmethod
     def chaosCalc(data, featureList, labels, thresharray, tree):
