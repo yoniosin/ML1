@@ -56,8 +56,3 @@ our_classification_train = BinaryClassification(train_data, cluster_sizes, mu, s
 
 correct_train = np.sum(int(x) == int(y) for x, y in zip(train_label, our_classification_train)) / len(train_label)
 print("Success Rate Train:", correct_train * 100)
-
-# logistic_model = LogisticModel()
-# print("start training")
-# #train_loss,test_loss = logistic_model.train(trainSet,testSet,'batch')
-# train_loss,test_loss = logistic_model.train(trainSet,testSet,'serial')
