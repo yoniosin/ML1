@@ -1,8 +1,0 @@
-import scipy
-import numpy as np
-import numpy.matlib
-
-
-array = np.array([1, 2, 3])
-test  = np.ndarray.repeat(array,3,axis=(0,1))
-print(test)
