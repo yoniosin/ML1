@@ -1,3 +1,8 @@
+# Following is the implementation of a Naive Bayes Classifier, which includes two functions:
+# 1) trainNaiveBayes- Splits the training data according to provided labels, and calculates mean and std for each cluster
+# 2) BinaryClassification- Classifies test data, to one of two possible clusters, 
+# assuming i.i.d normal distribution (with provided mu, sigma)
+
 import numpy as np
 import pylab as P
 
@@ -9,7 +14,7 @@ def trainNaiveBayes(samples, classes_num, real_labels):
     for i in range(classes_num):
         mat_list.append(np.zeros((len(samples[0]), 0)))
 
-    for index in range(samples_amount):
+    for index in range(samples_amount): # associate every sample to a cluster
         curr_label = int(real_labels[index])
         mat_list[curr_label] = np.append(mat_list[curr_label], samples[index][:, None], axis=1)
         cluster_sizes[curr_label] += 1
