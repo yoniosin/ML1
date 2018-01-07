@@ -11,7 +11,6 @@ import numpy as np
 from logisticModel import LogisticModel
 import matplotlib.pyplot as plt
 
-# from Quantizer import quantizer
 from NaiveBayes import *
 
 dataStruct = sio.loadmat('BreastCancerData.mat')
