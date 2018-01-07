@@ -7,12 +7,11 @@ Created on Mon Dec 18 16:45:14 2017
 
 import scipy
 import scipy.io as sio
-import numpy as np
-from logisticModel import LogisticModel
-import matplotlib.pyplot as plt
+import time
 
 from NaiveBayes import *
 
+t0=time.time()
 dataStruct = sio.loadmat('BreastCancerData.mat')
 data = dataStruct['X']
 dataSize = np.shape(data)
@@ -46,7 +45,8 @@ test_label = [label for data, label in testSet]
 cluster_sizes, mu, sigma = trainNaiveBayes(train_data, 2, train_label)
 # classification
 our_classification_test = BinaryClassification(test_data, cluster_sizes, mu, sigma)
-
+t1=time.time()
+print("elapsed time is: ", t1-t0)
 correct_test = np.sum(int(x) == int(y) for x, y in zip(test_label, our_classification_test)) / len(test_label)
 
 print("Success Rate Test:", correct_test * 100)
